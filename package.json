@@ -1,9 +1,12 @@
 {
     "name": "vscode-smart-split-into-lines",
-    "displayName": "vscode-smart-split-into-lines",
-    "description": "Split cursor by selected lines by Ctrl+Alt+l.",
+    "displayName": "Smart split into lines",
+    "description": "Split cursor by selected lines with Ctrl+Alt+l.",
     "version": "0.0.1",
     "publisher": "JulioGold",
+    "repository": {
+        "url": "https://github.com/JulioGold/vscode-smart-split-into-lines"
+	},
     "engines": {
         "vscode": "^0.10.10"
     },
