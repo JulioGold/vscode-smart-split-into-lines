@@ -7,37 +7,47 @@ import * as vscode from 'vscode';
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "vscode-smart-split-into-lines" is now active!');
+	// Use the console to output diagnostic information (console.log) and errors (console.error)
+	// This line of code will only be executed once when your extension is activated
+	console.log('Congratulations, your extension "vscode-smart-split-into-lines" is now active!');
 
-    context.subscriptions.push(vscode.commands.registerCommand('smart.splitIntoLines', () => {
-        
-		let textEditor = vscode.window.activeTextEditor;
-		let selection = textEditor.selection;
+	context.subscriptions.push(vscode.commands.registerCommand('smart.splitIntoLines', () => {
 		
-        if(!selection.isEmpty) {
-			
-            let document = textEditor.document;
-			let selections = new Array<vscode.Selection>();
-			
-            // Para cada linha selecionada
-            for (var i = selection.start.line; i <= selection.end.line; i++) {
-				
-                // Inserir o cursor em cada linha sempre no final da linha
-                if(i !== selection.end.line) {
+		let textEditor = vscode.window.activeTextEditor;
+		let selections = textEditor.selections;
+		let document = textEditor.document;
+		let splitedSelections = new Array<vscode.Selection>();
 
-                    let position = new vscode.Position(i, document.lineAt(i).range.end.character);
-					selections.push(new vscode.Selection(position, position));
-                    
-				} else if( selection.end.character > 0 ) {
-					
-                    selections.push(new vscode.Selection(selection.end,selection.end));
+		selections.forEach((selection) => {
+			if(selection.isSingleLine) {
+				splitedSelections.push(new vscode.Selection(selection.start, selection.end));
+			} else {
+				// Para cada linha selecionada
+				for (var i = selection.start.line; i <= selection.end.line; i++) {
+					let positionEnd = new vscode.Position(i, document.lineAt(i).range.end.character);
+					let positionStart = new vscode.Position(i, document.lineAt(i).range.start.character);
+					if (i === selection.start.line) {
+						//first line
+						splitedSelections.push(new vscode.Selection(selection.start, positionEnd));
+					} else if (i === selection.end.line) {
+						//last line
+						splitedSelections.push(new vscode.Selection(positionStart, selection.end));
+					} else{
+						splitedSelections.push(new vscode.Selection(positionStart, positionEnd));
+					}
 				}
 			}
-            
-            // Coloca o que foi feito no editor e pronto, valeu falows...
-			textEditor.selections = selections;
+		});
+		if(splitedSelections.length > 1) {
+			let lastSelection = splitedSelections[splitedSelections.length - 1];
+			if (lastSelection.isEmpty && lastSelection.end.character === 0 ) {
+				//strip the last empty selection
+				splitedSelections.pop();
+			}
+		}
+		if (splitedSelections.length > 0) {
+			// Coloca o que foi feito no editor e pronto, valeu falows...
+			textEditor.selections = splitedSelections;
 		}
 	}));
 }
